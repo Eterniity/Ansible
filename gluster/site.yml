@@ -4,6 +4,15 @@
     - name: replicacount
       prompt: Replica Count? (2/3)
       private: no
+    - name: gfsbrickpath
+      prompt: Brick dir? (e.g. /data/brick1)
+      private: no
+    - name: gfsbrickname
+      prompt: Brick name?
+      private: no
+    - name: gfsmountdir
+      prompt: Mount dir? (e.g. /data/app)
+      private: no
   tasks:
     - name: Add GlusterFS repo GPO key through shell
       shell: wget -O - http://download.gluster.org/pub/gluster/glusterfs/3.9/rsa.pub | apt-key add -
@@ -24,37 +33,29 @@
         state=started
     - name: Create GlusterFS brick
       file:
-        path=/srv/glusterfs/brick
+        path={{gfsbrickpath}}
         state=directory
     - name: Create GlusterFS volume
       gluster_volume:
-        bricks=/srv/glusterfs/brick
+        bricks={{gfsbrickpath}}
         cluster={{groups.gluster_servers | join(",")}}
         replicas={{replicacount}}
-        name=wwwhtml
+        name={{gfsbrickname}}
         state=present
         force=true
       run_once: true
     - name: Start GlusterFS volume
       gluster_volume:
-        name=wwwhtml
+        name={{gfsbrickname}}
         state=started
     - name: Create GlusterFS brick mount dir
       file:
-        path=/var/www/html
+        path={{gfsmountdir}}
         state=directory
     - name: Mount
       mount:
-        name: /var/www/html
-        src: 127.0.0.1:/wwwhtml
+        name: {{gfsmountdir}}
+        src: 127.0.0.1:/{{gfsbrickname}}
         fstype: glusterfs
         opts: "defaults,_netdev"
         state: mounted
-    - name: Install NginX
-      apt:
-        name: nginx 
-        state: present
-    - name: Reload NginX
-      service:
-        name=nginx
-        state=reloaded

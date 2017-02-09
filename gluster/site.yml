@@ -54,8 +54,8 @@
         state=directory
     - name: Mount
       mount:
-        name:{{gfsmountdir}}
-        src:127.0.0.1:/{{gfsbrickname}}
-        fstype:glusterfs
-        opts:"defaults,_netdev"
-        state:mounted
+        name: "{{gfsmountdir}}"
+        src: "127.0.0.1:/{{gfsbrickname}}"
+        fstype: glusterfs
+        opts: "defaults,_netdev"
+        state: mounted
